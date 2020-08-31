@@ -160,6 +160,21 @@ bitfield! {
     pub u8, from into AtributeLoadMode, mode, set_mode: 48, 47;
 }
 
+bitfield! {
+    pub struct AstInstruction(u64);
+    impl Debug;
+
+    pub u8, destination_register, set_destination_register: 7, 0;
+    pub u8, source_offset_register, set_source_offset_register: 15, 8;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
+    // NOTE: only valid if no_physical_flag is set.
+    pub i16, load_offset, set_load_offset: 30, 20;
+    pub u8, source_registerb, set_source_registerb: 46, 39;
+    pub no_physical_flag, set_no_physical_flag: 31;
+    pub u8, from into AtributeLoadMode, mode, set_mode: 48, 47;
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Opcode {
     NOP,
@@ -173,6 +188,7 @@ pub enum Opcode {
     KIL,
     AL2P,
     ALD,
+    AST,
 }
 
 impl From<u32> for Opcode {
@@ -189,6 +205,7 @@ impl From<u32> for Opcode {
             0xe3300000 => Opcode::KIL,
             0xefa00000 => Opcode::AL2P,
             0xefd80000 => Opcode::ALD,
+            0xeff00000 => Opcode::AST,
             _ => panic!("Invalid Opcode value"),
         }
     }
@@ -208,6 +225,7 @@ impl From<Opcode> for u32 {
             Opcode::KIL => 0xe3300000,
             Opcode::AL2P => 0xefa00000,
             Opcode::ALD => 0xefd80000,
+            Opcode::AST => 0xeff00000,
         }
     }
 }

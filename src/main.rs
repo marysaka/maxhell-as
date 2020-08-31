@@ -79,6 +79,16 @@ fn main() -> std::io::Result<()> {
         AtributeLoadMode::M128,
         0x0,
     ));
+    instructions.push(encoder::encode_ast(
+        7,
+        false,
+        1,
+        0,
+        0xFE,
+        true,
+        AtributeLoadMode::M128,
+        0x0,
+    ));
 
     println!("Instruction: 0x{:x}", instructions.last().unwrap());
 

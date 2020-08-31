@@ -256,3 +256,32 @@ pub fn encode_ald(
 
     inst.0
 }
+
+pub fn encode_ast(
+    source_predicate_register: u8,
+    invert_source_predicate: bool,
+    destionation_offset_register: u8,
+    source_register_a: u8,
+    source_register_b: u8,
+    no_physical_flag: bool,
+    mode: AtributeLoadMode,
+    load_offset: i16,
+) -> u64 {
+    let mut inst = AstInstruction(0);
+
+    encode_opcode(&mut inst.0, Opcode::AST);
+    encode_source_predicate(
+        &mut inst.0,
+        source_predicate_register,
+        invert_source_predicate,
+    );
+    encode_operand0(&mut inst.0, destionation_offset_register);
+    encode_operand1(&mut inst.0, source_register_a);
+
+    inst.set_source_registerb(source_register_b);
+    inst.set_no_physical_flag(no_physical_flag);
+    inst.set_mode(mode);
+    inst.set_load_offset(load_offset);
+
+    inst.0
+}
