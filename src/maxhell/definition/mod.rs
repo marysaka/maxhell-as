@@ -2,57 +2,57 @@ use std::convert::From;
 
 use crate::enum_with_val;
 
-bitfield!{
+bitfield! {
     pub struct Instruction(u64);
     impl Debug;
     pub data, set_data: 31, 0;
     pub u32, from into Opcode, opcode, set_opcode : 63, 32;
 }
 
-bitfield!{
+bitfield! {
     pub struct Imm16Data(u64);
     impl Debug;
     pub u16, imm16, set_imm16: 35, 20;
 }
 
-bitfield!{
+bitfield! {
     pub struct Imm32Data(u64);
     impl Debug;
     pub u32, imm32, set_imm32: 51, 20;
 }
 
-bitfield!{
+bitfield! {
     pub struct Register0Data(u64);
     impl Debug;
     pub u8, register, set_register: 7, 0;
 }
 
-bitfield!{
+bitfield! {
     pub struct OperandAData(u64);
     impl Debug;
     pub u8, register, set_register: 15, 8;
 }
 
-bitfield!{
+bitfield! {
     pub struct OperandBData(u64);
     impl Debug;
     pub u8, register, set_register: 27, 20;
 }
 
-bitfield!{
+bitfield! {
     pub struct OperandCData(u64);
     impl Debug;
     pub u8, register, set_register: 46, 39;
 }
 
-bitfield!{
+bitfield! {
     pub struct PredicateData(u64);
     impl Debug;
     pub u8, predicate_register, set_predicate_register: 18, 16;
     pub invert_predicate, set_invert_predicate: 19;
 }
 
-bitfield!{
+bitfield! {
     pub struct NopInstruction(u64);
     impl Debug;
 
@@ -63,17 +63,17 @@ bitfield!{
     pub u16, imm16, set_imm16: 36, 20;
 }
 
-bitfield!{
+bitfield! {
     pub struct SamInstruction(u64);
     impl Debug;
 }
 
-bitfield!{
+bitfield! {
     pub struct RamInstruction(u64);
     impl Debug;
 }
 
-bitfield!{
+bitfield! {
     pub struct RetInstruction(u64);
     impl Debug;
 
@@ -82,7 +82,7 @@ bitfield!{
     pub invert_predicate, set_invert_predicate: 19;
 }
 
-bitfield!{
+bitfield! {
     pub struct ExitInstruction(u64);
     impl Debug;
 
@@ -92,21 +92,21 @@ bitfield!{
     pub invert_predicate, set_invert_predicate: 19;
 }
 
-bitfield!{
+bitfield! {
     pub struct GetLMEMBASEInstruction(u64);
     impl Debug;
 
     pub u8, source_register, set_source_register: 7, 0;
 }
 
-bitfield!{
+bitfield! {
     pub struct SetLMEMBASEInstruction(u64);
     impl Debug;
 
     pub u8, destination_register, set_destination_register: 15, 8;
 }
 
-bitfield!{
+bitfield! {
     pub struct IdeInstruction(u64);
     impl Debug;
 
@@ -114,7 +114,7 @@ bitfield!{
     pub disabe, set_disabe: 5;
 }
 
-bitfield!{
+bitfield! {
     pub struct KilInstruction(u64);
     impl Debug;
 
@@ -133,7 +133,7 @@ pub enum Opcode {
     GETLMEMBASE,
     SETLMEMBASE,
     IDE,
-    KIL
+    KIL,
 }
 
 impl From<u32> for Opcode {
@@ -148,7 +148,7 @@ impl From<u32> for Opcode {
             0xe2f00000 => Opcode::SETLMEMBASE,
             0xe3900000 => Opcode::IDE,
             0xe3300000 => Opcode::KIL,
-            _ => panic!("Invalid Opcode value")
+            _ => panic!("Invalid Opcode value"),
         }
     }
 }
@@ -172,22 +172,22 @@ impl From<Opcode> for u32 {
 enum_with_val! {
     #[derive(PartialEq, Eq)]
     pub struct ControlCode(u8) {
-        False = 0, // never execute
-        LessThan = 1,
-        Equal = 2,
-        LessOrEqual = 3,
-        GreaterThan = 4,
-        NotEqual = 5,
-        GreaterOrEqual = 6,
-        IsNumber = 7,
-        IsNaN = 8,
-        LessThanOrNaN = 9,
-        EqualOrNaN = 10,
-        LessOrEqualOrNaN = 11,
-        GreaterTanOrNaN = 12,
-        NotEqualOrNaN = 13,
-        GreaterOrEqualOrNaN = 14,
-        True = 15, // always execute
+        FALSE = 0, // never execute
+        LESS_THAN = 1,
+        EQUAL = 2,
+        LESS_OR_EQUAL = 3,
+        GREATER_THAN = 4,
+        NOT_EQUAL = 5,
+        GREATER_OR_EQUAL = 6,
+        IS_NUMBER = 7,
+        IS_NAN = 8,
+        LESS_THAN_OR_NAN = 9,
+        EQUAL_OR_NAN = 10,
+        LESS_OR_EQUAL_OR_NAN = 11,
+        GREATER_THAN_OR_NAN = 12,
+        NOT_EQUAL_OR_NAN = 13,
+        GREATER_OR_EQUAL_OR_NAN = 14,
+        TRUE = 15, // always execute
 
         // TODO: figure out what those do
         OFF = 16,
@@ -212,14 +212,14 @@ enum_with_val! {
         RLE = 30,
         RGT = 31,
 
-        Min = 0,
-        Max = 31
+        MIN = 0,
+        MAX = 31
     }
 }
 
 impl ControlCode {
     pub fn is_valid(value: u8) -> bool {
-        value >= ControlCode::Min.0 && value <= ControlCode::Max.0
+        value >= ControlCode::MIN.0 && value <= ControlCode::MAX.0
     }
 }
 

@@ -1,4 +1,3 @@
-
 /// Creates a fake C-like enum, where all bit values are accepted.
 ///
 /// This is mainly useful for FFI constructs. In C, an enum is allowed to take
@@ -18,6 +17,7 @@ macro_rules! enum_with_val {
         }
 
         impl ::core::fmt::Debug for $ident {
+            #[allow(unreachable_patterns)]
             fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                 match self {
                     $(&$ident::$variant => write!(f, "{}::{}", stringify!($ident), stringify!($variant)),)*

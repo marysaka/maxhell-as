@@ -85,7 +85,11 @@ pub fn encode_sam() -> u64 {
     inst.0
 }
 
-pub fn encode_ret(predicate_register: u8, invert_predicate: bool, control_code: ControlCode) -> u64 {
+pub fn encode_ret(
+    predicate_register: u8,
+    invert_predicate: bool,
+    control_code: ControlCode,
+) -> u64 {
     let mut inst = RetInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::RET);
@@ -96,7 +100,12 @@ pub fn encode_ret(predicate_register: u8, invert_predicate: bool, control_code: 
     inst.0
 }
 
-pub fn encode_exit(predicate_register: u8, invert_predicate: bool, control_code: ControlCode, keep_refcount: bool) -> u64 {
+pub fn encode_exit(
+    predicate_register: u8,
+    invert_predicate: bool,
+    control_code: ControlCode,
+    keep_refcount: bool,
+) -> u64 {
     let mut inst = ExitInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::EXIT);
@@ -108,7 +117,13 @@ pub fn encode_exit(predicate_register: u8, invert_predicate: bool, control_code:
     inst.0
 }
 
-pub fn encode_nop(trigger: bool, predicate_register: u8, invert_predicate: bool, value: u16, control_code: ControlCode) -> u64 {
+pub fn encode_nop(
+    trigger: bool,
+    predicate_register: u8,
+    invert_predicate: bool,
+    value: u16,
+    control_code: ControlCode,
+) -> u64 {
     let mut inst = NopInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::NOP);
