@@ -26,32 +26,32 @@ fn encode_imm32(out: &mut u64, value: u32) {
     *out = inst.0;
 }
 
-fn encode_register0(out: &mut u64, register: u8) {
-    let mut inst = Register0Data(*out);
+fn encode_operand0(out: &mut u64, register: u8) {
+    let mut inst = Operand0Data(*out);
 
     inst.set_operand(register);
 
     *out = inst.0;
 }
 
-fn encode_operand_a(out: &mut u64, register: u8) {
-    let mut inst = OperandAData(*out);
+fn encode_operand1(out: &mut u64, register: u8) {
+    let mut inst = Operand1Data(*out);
 
     inst.set_operand(register);
 
     *out = inst.0;
 }
 
-fn encode_operand_b(out: &mut u64, register: u8) {
-    let mut inst = OperandBData(*out);
+fn encode_operand2(out: &mut u64, register: u8) {
+    let mut inst = Operand2Data(*out);
 
     inst.set_operand(register);
 
     *out = inst.0;
 }
 
-fn encode_operand_c(out: &mut u64, register: u8) {
-    let mut inst = OperandCData(*out);
+fn encode_operand3(out: &mut u64, register: u8) {
+    let mut inst = Operand3Data(*out);
 
     inst.set_operand(register);
 
@@ -152,7 +152,7 @@ pub fn encode_get_lmembase(register: u8) -> u64 {
     let mut inst = GetLMEMBASEInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::GETLMEMBASE);
-    encode_register0(&mut inst.0, register);
+    encode_operand0(&mut inst.0, register);
 
     inst.0
 }
@@ -189,7 +189,7 @@ pub fn encode_set_lmembase(register: u8) -> u64 {
     let mut inst = SetLMEMBASEInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::SETLMEMBASE);
-    encode_operand_a(&mut inst.0, register);
+    encode_operand1(&mut inst.0, register);
 
     inst.0
 }
@@ -201,8 +201,8 @@ pub fn encode_al2p(
     destionation_register: u8,
     source_register: u8,
     o_flag: bool,
-    mode: Al2pMode,
-    value: i16,
+    mode: AtributeLoadMode,
+    load_offset: i16,
 ) -> u64 {
     debug_assert!(destination_predicate_register < 8);
 
@@ -214,13 +214,45 @@ pub fn encode_al2p(
         source_predicate_register,
         invert_source_predicate,
     );
-    encode_operand_a(&mut inst.0, source_register);
-    encode_register0(&mut inst.0, destionation_register);
+
+    encode_operand0(&mut inst.0, destionation_register);
+    encode_operand1(&mut inst.0, source_register);
 
     inst.set_destination_predicate_register(destination_predicate_register);
     inst.set_o_flag(o_flag);
     inst.set_mode(mode);
-    inst.set_value(value);
+    inst.set_load_offset(load_offset);
+
+    inst.0
+}
+
+pub fn encode_ald(
+    source_predicate_register: u8,
+    invert_source_predicate: bool,
+    destionation_register: u8,
+    source_offset_register: u8,
+    source_register: u8,
+    no_physical_flag: bool,
+    o_flag: bool,
+    mode: AtributeLoadMode,
+    load_offset: i16,
+) -> u64 {
+    let mut inst = AldInstruction(0);
+
+    encode_opcode(&mut inst.0, Opcode::ALD);
+    encode_source_predicate(
+        &mut inst.0,
+        source_predicate_register,
+        invert_source_predicate,
+    );
+    encode_operand0(&mut inst.0, destionation_register);
+    encode_operand1(&mut inst.0, source_offset_register);
+
+    inst.set_source_register(source_register);
+    inst.set_no_physical_flag(no_physical_flag);
+    inst.set_o_flag(o_flag);
+    inst.set_mode(mode);
+    inst.set_load_offset(load_offset);
 
     inst.0
 }

@@ -28,19 +28,25 @@ bitfield! {
 }
 
 bitfield! {
-    pub struct OperandAData(u64);
+    pub struct Operand0Data(u64);
+    impl Debug;
+    pub u8, operand, set_operand: 7, 0;
+}
+
+bitfield! {
+    pub struct Operand1Data(u64);
     impl Debug;
     pub u8, operand, set_operand: 15, 8;
 }
 
 bitfield! {
-    pub struct OperandBData(u64);
+    pub struct Operand2Data(u64);
     impl Debug;
     pub u8, operand, set_operand: 27, 20;
 }
 
 bitfield! {
-    pub struct OperandCData(u64);
+    pub struct Operand3Data(u64);
     impl Debug;
     pub u8, operand, set_operand: 46, 39;
 }
@@ -124,7 +130,6 @@ bitfield! {
 }
 
 bitfield! {
-    // TODO: this seems to hide way more flags here (bit 31? bits 33 to 43?)
     pub struct Al2pInstruction(u64);
     impl Debug;
 
@@ -132,12 +137,27 @@ bitfield! {
     pub u8, source_register, set_source_register: 15, 8;
     pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
     pub invert_source_predicate, set_invert_source_predicate: 19;
-    pub i16, value, set_value: 30, 20;
-
+    pub i16, load_offset, set_load_offset: 30, 20;
     pub o_flag, set_o_flag: 32;
 
     pub u8, destination_predicate_register, set_destination_predicate_register: 46, 44;
-    pub u8, from into Al2pMode, mode, set_mode: 48, 47;
+    pub u8, from into AtributeLoadMode, mode, set_mode: 48, 47;
+}
+
+bitfield! {
+    pub struct AldInstruction(u64);
+    impl Debug;
+
+    pub u8, destination_register, set_destination_register: 7, 0;
+    pub u8, source_offset_register, set_source_offset_register: 15, 8;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
+    // NOTE: only valid if no_physical_flag is set.
+    pub i16, load_offset, set_load_offset: 30, 20;
+    pub u8, source_register, set_source_register: 46, 39;
+    pub no_physical_flag, set_no_physical_flag: 31;
+    pub o_flag, set_o_flag: 32;
+    pub u8, from into AtributeLoadMode, mode, set_mode: 48, 47;
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -152,6 +172,7 @@ pub enum Opcode {
     IDE,
     KIL,
     AL2P,
+    ALD,
 }
 
 impl From<u32> for Opcode {
@@ -167,6 +188,7 @@ impl From<u32> for Opcode {
             0xe3900000 => Opcode::IDE,
             0xe3300000 => Opcode::KIL,
             0xefa00000 => Opcode::AL2P,
+            0xefd80000 => Opcode::ALD,
             _ => panic!("Invalid Opcode value"),
         }
     }
@@ -185,6 +207,7 @@ impl From<Opcode> for u32 {
             Opcode::IDE => 0xe3900000,
             Opcode::KIL => 0xe3300000,
             Opcode::AL2P => 0xefa00000,
+            Opcode::ALD => 0xefd80000,
         }
     }
 }
@@ -239,8 +262,8 @@ enum_with_val! {
 
 enum_with_val! {
     #[derive(PartialEq, Eq)]
-    pub struct Al2pMode(u8) {
-        M32 = 0, // Guesss TODO: check this
+    pub struct AtributeLoadMode(u8) {
+        M32 = 0,
         M64 = 1,
         M96 = 2,
         M128 = 3

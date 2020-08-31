@@ -65,7 +65,18 @@ fn main() -> std::io::Result<()> {
         1,
         42,
         false,
-        Al2pMode::M128,
+        AtributeLoadMode::M128,
+        0x0,
+    ));
+    instructions.push(encoder::encode_ald(
+        7,
+        false,
+        1,
+        0,
+        0xFF,
+        true,
+        false,
+        AtributeLoadMode::M128,
         0x0,
     ));
 
