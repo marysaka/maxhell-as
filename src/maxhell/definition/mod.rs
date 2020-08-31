@@ -173,8 +173,6 @@ bitfield! {
     pub struct AtomsIntruction(u64);
     impl Debug;
 
-    // TODO: reduction flags, sizing and type.
-
     pub u8, destniation_register, set_destination_register: 7, 0;
     pub u8, source_register_a, set_source_register_a: 15, 8;
     pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
@@ -188,11 +186,35 @@ bitfield! {
     pub u8, register_a_offset1, set_register_a_offset1: 32, 30;
 
     // offset / 0x10
-    // NOTE: signed
+    // NOTE: signed if source_register_a != 0xFF, otherwise unsigned.
     // TODO: better name
     pub i32, register_a_offset2, set_register_a_offset2: 51, 32;
 
     pub u8, from into AtomsOperation, operation, set_operation: 55, 52;
+}
+
+bitfield! {
+    pub struct AtomsCasIntruction(u64);
+    impl Debug;
+
+    pub u8, destniation_register, set_destination_register: 7, 0;
+    pub u8, source_register_a, set_source_register_a: 15, 8;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
+    pub u8, source_register_b, set_source_register_b: 27, 20;
+
+    // (offset % 0x10) / 4
+    // NOTE: unsigned (I think NVIDIA did a oopsie here...? or maybe nvidisasm is totally broken)
+    // TODO: better name
+    pub u8, register_a_offset1, set_register_a_offset1: 32, 30;
+
+    // offset / 0x10
+    // NOTE: signed if source_register_a != 0xFF, otherwise unsigned.
+    // TODO: better name
+    pub i32, register_a_offset2, set_register_a_offset2: 51, 32;
+
+    pub u8, from into AtomicCasPrimitiveType, type_size, set_type_size: 52, 52;
+    pub u8, from into AtomsCasOperation, operation, set_operation: 54, 53;
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -343,5 +365,22 @@ enum_with_val! {
         OR = 6,
         XOR = 7,
         EXCH = 8,
+    }
+}
+
+enum_with_val! {
+    #[derive(PartialEq, Eq)]
+    pub struct AtomicCasPrimitiveType(u8) {
+        U32 = 0,
+        U64 = 1,
+    }
+}
+
+enum_with_val! {
+    #[derive(PartialEq, Eq)]
+    pub struct AtomsCasOperation(u8) {
+        CAST = 0,
+        CAST_SPIN = 1,
+        CAS = 2
     }
 }

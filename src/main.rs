@@ -95,8 +95,19 @@ fn main() -> std::io::Result<()> {
         4,
         1,
         2,
-        -4,
+        0x10,
+        AtomicPrimitiveType::S32,
         AtomsOperation::MIN,
+    ));
+    instructions.push(encoder::encode_atoms_cas(
+        7,
+        false,
+        4,
+        1,
+        2,
+        0x14,
+        AtomicCasPrimitiveType::U64,
+        AtomsCasOperation::CAST_SPIN,
     ));
 
     println!("Instruction: 0x{:x}", instructions.last().unwrap());
