@@ -34,8 +34,24 @@ fn encode_register0(out: &mut u64, register: u8) {
     *out = inst.0;
 }
 
-fn encode_register8(out: &mut u64, register: u8) {
-    let mut inst = Register8Data(*out);
+fn encode_operand_a(out: &mut u64, register: u8) {
+    let mut inst = OperandAData(*out);
+
+    inst.set_register(register);
+
+    *out = inst.0;
+}
+
+fn encode_operand_b(out: &mut u64, register: u8) {
+    let mut inst = OperandBData(*out);
+
+    inst.set_register(register);
+
+    *out = inst.0;
+}
+
+fn encode_operand_c(out: &mut u64, register: u8) {
+    let mut inst = OperandCData(*out);
 
     inst.set_register(register);
 
@@ -69,30 +85,30 @@ pub fn encode_sam() -> u64 {
     inst.0
 }
 
-pub fn encode_ret(predicate_register: u8, invert_predicate: bool, cc_flags: u8) -> u64 {
+pub fn encode_ret(predicate_register: u8, invert_predicate: bool, control_code: ControlCode) -> u64 {
     let mut inst = RetInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::RET);
     encode_predicate(&mut inst.0, predicate_register, invert_predicate);
 
-    inst.set_cc_flags(cc_flags);
+    inst.set_cc_flags(control_code);
 
     inst.0
 }
 
-pub fn encode_exit(predicate_register: u8, invert_predicate: bool, cc_flags: u8, keep_refcount: bool) -> u64 {
+pub fn encode_exit(predicate_register: u8, invert_predicate: bool, control_code: ControlCode, keep_refcount: bool) -> u64 {
     let mut inst = ExitInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::EXIT);
     encode_predicate(&mut inst.0, predicate_register, invert_predicate);
 
-    inst.set_cc_flags(cc_flags);
+    inst.set_cc_flags(control_code);
     inst.set_keep_refcount(keep_refcount);
 
     inst.0
 }
 
-pub fn encode_nop(trigger: bool, predicate_register: u8, invert_predicate: bool, value: u16, cc_flags: u8) -> u64 {
+pub fn encode_nop(trigger: bool, predicate_register: u8, invert_predicate: bool, value: u16, control_code: ControlCode) -> u64 {
     let mut inst = NopInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::NOP);
@@ -100,7 +116,7 @@ pub fn encode_nop(trigger: bool, predicate_register: u8, invert_predicate: bool,
     encode_predicate(&mut inst.0, predicate_register, invert_predicate);
 
     inst.set_trigger(trigger);
-    inst.set_cc_flags(cc_flags);
+    inst.set_cc_flags(control_code);
 
     inst.0
 }
@@ -140,7 +156,7 @@ pub fn encode_set_lmembase(register: u8) -> u64 {
     let mut inst = SetLMEMBASEInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::SETLMEMBASE);
-    encode_register8(&mut inst.0, register);
+    encode_operand_a(&mut inst.0, register);
 
     inst.0
 }

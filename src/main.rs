@@ -8,6 +8,7 @@ extern crate bitfield;
 pub mod maxhell;
 
 use maxhell::encoder;
+use maxhell::definition::*;
 
 fn write_shader(file_name: &str, instructions: &[u64]) -> std::io::Result<()> {
     let mut file = OpenOptions::new().write(true).create(true).truncate(true).open(file_name)?;
@@ -31,7 +32,7 @@ fn write_shader(file_name: &str, instructions: &[u64]) -> std::io::Result<()> {
     }
 
     while (position % 0x20) != 0 {
-        file.write_all(&encoder::encode_nop(false, 7, false, 0, 0xF).to_le_bytes())?;
+        file.write_all(&encoder::encode_nop(false, 7, false, 0, ControlCode::True).to_le_bytes())?;
         position += 0x8;
     }
 
@@ -45,9 +46,10 @@ fn main() -> std::io::Result<()> {
 
     instructions.push(encoder::encode_ram());
     instructions.push(encoder::encode_sam());
-    instructions.push(encoder::encode_ret(7, false, 0xF));
-    instructions.push(encoder::encode_exit(7, false, 0xF, false));
-    instructions.push(encoder::encode_nop(false, 7, false, 0, 0xF));
+
+    instructions.push(encoder::encode_ret(7, false, ControlCode::True));
+    instructions.push(encoder::encode_exit(7, false, ControlCode::True, false));
+    instructions.push(encoder::encode_nop(false, 7, false, 0, ControlCode::True));
     instructions.push(encoder::encode_get_lmembase(42));
     instructions.push(encoder::encode_set_lmembase(42));
     instructions.push(encoder::encode_ide(42, false));

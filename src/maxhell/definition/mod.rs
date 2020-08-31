@@ -1,5 +1,7 @@
 use std::convert::From;
 
+use crate::enum_with_val;
+
 bitfield!{
     pub struct Instruction(u64);
     impl Debug;
@@ -26,9 +28,21 @@ bitfield!{
 }
 
 bitfield!{
-    pub struct Register8Data(u64);
+    pub struct OperandAData(u64);
     impl Debug;
     pub u8, register, set_register: 15, 8;
+}
+
+bitfield!{
+    pub struct OperandBData(u64);
+    impl Debug;
+    pub u8, register, set_register: 27, 20;
+}
+
+bitfield!{
+    pub struct OperandCData(u64);
+    impl Debug;
+    pub u8, register, set_register: 46, 39;
 }
 
 bitfield!{
@@ -42,8 +56,7 @@ bitfield!{
     pub struct NopInstruction(u64);
     impl Debug;
 
-    // TODO: Define an enum to handle this
-    pub u8, cc_flags, set_cc_flags: 12, 8;
+    pub u8, from into ControlCode, cc_flags, set_cc_flags: 12, 8;
     pub trigger, set_trigger: 13;
     pub u8, predicate_register, set_predicate_register: 18, 16;
     pub invert_predicate, set_invert_predicate: 19;
@@ -64,8 +77,7 @@ bitfield!{
     pub struct RetInstruction(u64);
     impl Debug;
 
-    // TODO: Define an enum to handle this
-    pub u8, cc_flags, set_cc_flags: 4, 0;
+    pub u8, from into ControlCode, cc_flags, set_cc_flags: 4, 0;
     pub u8, predicate_register, set_predicate_register: 18, 16;
     pub invert_predicate, set_invert_predicate: 19;
 }
@@ -74,8 +86,7 @@ bitfield!{
     pub struct ExitInstruction(u64);
     impl Debug;
 
-    // TODO: Define an enum to handle this
-    pub u8, cc_flags, set_cc_flags: 4, 0;
+    pub u8, from into ControlCode, cc_flags, set_cc_flags: 4, 0;
     pub u8, keep_refcount, set_keep_refcount: 5;
     pub u8, predicate_register, set_predicate_register: 18, 16;
     pub invert_predicate, set_invert_predicate: 19;
@@ -94,8 +105,6 @@ bitfield!{
 
     pub u8, destination_register, set_destination_register: 15, 8;
 }
-
-
 
 bitfield!{
     pub struct IdeInstruction(u64);
@@ -157,5 +166,72 @@ impl From<Opcode> for u32 {
             Opcode::IDE => 0xe3900000,
             Opcode::KIL => 0xe3300000,
         }
+    }
+}
+
+enum_with_val! {
+    #[derive(PartialEq, Eq)]
+    pub struct ControlCode(u8) {
+        False = 0, // never execute
+        LessThan = 1,
+        Equal = 2,
+        LessOrEqual = 3,
+        GreaterThan = 4,
+        NotEqual = 5,
+        GreaterOrEqual = 6,
+        IsNumber = 7,
+        IsNaN = 8,
+        LessThanOrNaN = 9,
+        EqualOrNaN = 10,
+        LessOrEqualOrNaN = 11,
+        GreaterTanOrNaN = 12,
+        NotEqualOrNaN = 13,
+        GreaterOrEqualOrNaN = 14,
+        True = 15, // always execute
+
+        // TODO: figure out what those do
+        OFF = 16,
+        LO = 17,
+        SFF = 18,
+        LS = 19,
+        HI = 20,
+        SFT = 21,
+        HS = 22,
+        OFT = 23,
+
+        // NOTE: All the instructions around here are related to the CSM patent (urgh)
+        // NOTE: FCSM_* variants seems to be the opposite of the CSM one.
+        // TODO: figure out anyway, with hardware testing.
+        CSM_TA = 24,
+        CSM_TR = 25,
+        CSM_MX = 26,
+        FCSM_TA = 27,
+        FCSM_TR = 28,
+        FCSM_MX = 29,
+
+        RLE = 30,
+        RGT = 31,
+
+        Min = 0,
+        Max = 31
+    }
+}
+
+impl ControlCode {
+    pub fn is_valid(value: u8) -> bool {
+        value >= ControlCode::Min.0 && value <= ControlCode::Max.0
+    }
+}
+
+impl From<ControlCode> for u8 {
+    fn from(control: ControlCode) -> u8 {
+        control.0
+    }
+}
+
+impl From<u8> for ControlCode {
+    fn from(value: u8) -> ControlCode {
+        debug_assert!(ControlCode::is_valid(value));
+        ControlCode(value)
     }
 }
