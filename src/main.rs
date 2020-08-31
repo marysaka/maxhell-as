@@ -89,6 +89,15 @@ fn main() -> std::io::Result<()> {
         AtributeLoadMode::M128,
         0x0,
     ));
+    instructions.push(encoder::encode_atoms(
+        7,
+        false,
+        4,
+        1,
+        2,
+        -4,
+        AtomsOperation::MIN,
+    ));
 
     println!("Instruction: 0x{:x}", instructions.last().unwrap());
 

@@ -22,12 +22,6 @@ bitfield! {
 }
 
 bitfield! {
-    pub struct Register0Data(u64);
-    impl Debug;
-    pub u8, operand, set_operand: 7, 0;
-}
-
-bitfield! {
     pub struct Operand0Data(u64);
     impl Debug;
     pub u8, operand, set_operand: 7, 0;
@@ -175,7 +169,34 @@ bitfield! {
     pub u8, from into AtributeLoadMode, mode, set_mode: 48, 47;
 }
 
+bitfield! {
+    pub struct AtomsIntruction(u64);
+    impl Debug;
+
+    // TODO: reduction flags, sizing and type.
+
+    pub u8, destniation_register, set_destination_register: 7, 0;
+    pub u8, source_register_a, set_source_register_a: 15, 8;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
+    pub u8, source_register_b, set_source_register_b: 27, 20;
+    pub u8, from into AtomicPrimitiveType, type_size, set_type_size: 30, 28;
+
+    // (offset % 0x10) / 4
+    // NOTE: unsigned (I think NVIDIA did a oopsie here...? or maybe nvidisasm is totally broken)
+    // TODO: better name
+    pub u8, register_a_offset1, set_register_a_offset1: 32, 30;
+
+    // offset / 0x10
+    // NOTE: signed
+    // TODO: better name
+    pub i32, register_a_offset2, set_register_a_offset2: 51, 32;
+
+    pub u8, from into AtomsOperation, operation, set_operation: 55, 52;
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[allow(non_camel_case_types)]
 pub enum Opcode {
     NOP,
     SAM,
@@ -189,6 +210,10 @@ pub enum Opcode {
     AL2P,
     ALD,
     AST,
+    ATOM,
+    ATOM_CAS,
+    ATOMS,
+    ATOMS_CAS,
 }
 
 impl From<u32> for Opcode {
@@ -206,6 +231,10 @@ impl From<u32> for Opcode {
             0xefa00000 => Opcode::AL2P,
             0xefd80000 => Opcode::ALD,
             0xeff00000 => Opcode::AST,
+            0xec000000 => Opcode::ATOMS,
+            0xed000000 => Opcode::ATOM,
+            0xee400000 => Opcode::ATOMS_CAS,
+            0xeef00000 => Opcode::ATOM_CAS,
             _ => panic!("Invalid Opcode value"),
         }
     }
@@ -226,6 +255,10 @@ impl From<Opcode> for u32 {
             Opcode::AL2P => 0xefa00000,
             Opcode::ALD => 0xefd80000,
             Opcode::AST => 0xeff00000,
+            Opcode::ATOMS => 0xec000000,
+            Opcode::ATOM => 0xed000000,
+            Opcode::ATOMS_CAS => 0xee400000,
+            Opcode::ATOM_CAS => 0xeef00000,
         }
     }
 }
@@ -285,5 +318,30 @@ enum_with_val! {
         M64 = 1,
         M96 = 2,
         M128 = 3
+    }
+}
+
+enum_with_val! {
+    #[derive(PartialEq, Eq)]
+    pub struct AtomicPrimitiveType(u8) {
+        U32 = 0,
+        S32 = 1,
+        U64 = 2,
+        S64 = 3,
+    }
+}
+
+enum_with_val! {
+    #[derive(PartialEq, Eq)]
+    pub struct AtomsOperation(u8) {
+        ADD = 0,
+        MIN = 1,
+        MAX = 2,
+        INC = 3,
+        DEC = 4,
+        AND = 5,
+        OR = 6,
+        XOR = 7,
+        EXCH = 8,
     }
 }

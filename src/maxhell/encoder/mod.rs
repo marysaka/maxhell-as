@@ -285,3 +285,35 @@ pub fn encode_ast(
 
     inst.0
 }
+
+pub fn encode_atoms(
+    source_predicate_register: u8,
+    invert_source_predicate: bool,
+    destination_register: u8,
+    source_register_a: u8,
+    source_register_b: u8,
+    register_a_offset: i32,
+    operation: AtomsOperation,
+) -> u64 {
+    let mut inst = AtomsIntruction(0);
+
+    encode_opcode(&mut inst.0, Opcode::ATOMS);
+    encode_source_predicate(
+        &mut inst.0,
+        source_predicate_register,
+        invert_source_predicate,
+    );
+    encode_operand0(&mut inst.0, destination_register);
+    encode_operand1(&mut inst.0, source_register_a);
+    encode_operand2(&mut inst.0, source_register_b);
+
+    inst.set_type_size(AtomicPrimitiveType::S32);
+
+    // NOTE: if the value is negative, this part will end up positive.
+    // TODO: check if the negative offset are supported in the first place.
+    inst.set_register_a_offset1((((register_a_offset) % 0x10) / 4) as u8);
+    inst.set_register_a_offset2(register_a_offset / 0x10);
+    inst.set_operation(operation);
+
+    inst.0
+}
