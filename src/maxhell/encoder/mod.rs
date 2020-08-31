@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+#![allow(dead_code, clippy::too_many_arguments)]
 
 use super::definition::*;
 
@@ -29,7 +29,7 @@ fn encode_imm32(out: &mut u64, value: u32) {
 fn encode_register0(out: &mut u64, register: u8) {
     let mut inst = Register0Data(*out);
 
-    inst.set_register(register);
+    inst.set_operand(register);
 
     *out = inst.0;
 }
@@ -37,7 +37,7 @@ fn encode_register0(out: &mut u64, register: u8) {
 fn encode_operand_a(out: &mut u64, register: u8) {
     let mut inst = OperandAData(*out);
 
-    inst.set_register(register);
+    inst.set_operand(register);
 
     *out = inst.0;
 }
@@ -45,7 +45,7 @@ fn encode_operand_a(out: &mut u64, register: u8) {
 fn encode_operand_b(out: &mut u64, register: u8) {
     let mut inst = OperandBData(*out);
 
-    inst.set_register(register);
+    inst.set_operand(register);
 
     *out = inst.0;
 }
@@ -53,18 +53,18 @@ fn encode_operand_b(out: &mut u64, register: u8) {
 fn encode_operand_c(out: &mut u64, register: u8) {
     let mut inst = OperandCData(*out);
 
-    inst.set_register(register);
+    inst.set_operand(register);
 
     *out = inst.0;
 }
 
-fn encode_predicate(out: &mut u64, predicate_register: u8, invert_predicate: bool) {
+fn encode_source_predicate(out: &mut u64, predicate_register: u8, invert_predicate: bool) {
     debug_assert!(predicate_register < 8);
 
-    let mut inst = PredicateData(*out);
+    let mut inst = SourcePredicateData(*out);
 
-    inst.set_predicate_register(predicate_register);
-    inst.set_invert_predicate(invert_predicate);
+    inst.set_source_predicate_register(predicate_register);
+    inst.set_invert_source_predicate(invert_predicate);
 
     *out = inst.0;
 }
@@ -86,14 +86,18 @@ pub fn encode_sam() -> u64 {
 }
 
 pub fn encode_ret(
-    predicate_register: u8,
-    invert_predicate: bool,
+    source_predicate_register: u8,
+    invert_source_predicate: bool,
     control_code: ControlCode,
 ) -> u64 {
     let mut inst = RetInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::RET);
-    encode_predicate(&mut inst.0, predicate_register, invert_predicate);
+    encode_source_predicate(
+        &mut inst.0,
+        source_predicate_register,
+        invert_source_predicate,
+    );
 
     inst.set_cc_flags(control_code);
 
@@ -101,15 +105,19 @@ pub fn encode_ret(
 }
 
 pub fn encode_exit(
-    predicate_register: u8,
-    invert_predicate: bool,
+    source_predicate_register: u8,
+    invert_source_predicate: bool,
     control_code: ControlCode,
     keep_refcount: bool,
 ) -> u64 {
     let mut inst = ExitInstruction(0);
 
     encode_opcode(&mut inst.0, Opcode::EXIT);
-    encode_predicate(&mut inst.0, predicate_register, invert_predicate);
+    encode_source_predicate(
+        &mut inst.0,
+        source_predicate_register,
+        invert_source_predicate,
+    );
 
     inst.set_cc_flags(control_code);
     inst.set_keep_refcount(keep_refcount);
@@ -119,8 +127,8 @@ pub fn encode_exit(
 
 pub fn encode_nop(
     trigger: bool,
-    predicate_register: u8,
-    invert_predicate: bool,
+    source_predicate_register: u8,
+    invert_source_predicate: bool,
     value: u16,
     control_code: ControlCode,
 ) -> u64 {
@@ -128,7 +136,11 @@ pub fn encode_nop(
 
     encode_opcode(&mut inst.0, Opcode::NOP);
     encode_imm16(&mut inst.0, value);
-    encode_predicate(&mut inst.0, predicate_register, invert_predicate);
+    encode_source_predicate(
+        &mut inst.0,
+        source_predicate_register,
+        invert_source_predicate,
+    );
 
     inst.set_trigger(trigger);
     inst.set_cc_flags(control_code);
@@ -155,14 +167,20 @@ pub fn encode_ide(value: u16, disabe: bool) -> u64 {
     inst.0
 }
 
-pub fn encode_kil(predicate_register: u8, invert_predicate: bool, value: u8) -> u64 {
-    debug_assert!(value < 0x20);
-
+pub fn encode_kil(
+    source_predicate_register: u8,
+    invert_source_predicate: bool,
+    control_code: ControlCode,
+) -> u64 {
     let mut inst = KilInstruction(0);
     encode_opcode(&mut inst.0, Opcode::KIL);
-    encode_predicate(&mut inst.0, predicate_register, invert_predicate);
+    encode_source_predicate(
+        &mut inst.0,
+        source_predicate_register,
+        invert_source_predicate,
+    );
 
-    inst.set_cc_flags(value);
+    inst.set_cc_flags(control_code);
 
     inst.0
 }
@@ -172,6 +190,37 @@ pub fn encode_set_lmembase(register: u8) -> u64 {
 
     encode_opcode(&mut inst.0, Opcode::SETLMEMBASE);
     encode_operand_a(&mut inst.0, register);
+
+    inst.0
+}
+
+pub fn encode_al2p(
+    source_predicate_register: u8,
+    invert_source_predicate: bool,
+    destination_predicate_register: u8,
+    destionation_register: u8,
+    source_register: u8,
+    o_flag: bool,
+    mode: Al2pMode,
+    value: i16,
+) -> u64 {
+    debug_assert!(destination_predicate_register < 8);
+
+    let mut inst = Al2pInstruction(0);
+
+    encode_opcode(&mut inst.0, Opcode::AL2P);
+    encode_source_predicate(
+        &mut inst.0,
+        source_predicate_register,
+        invert_source_predicate,
+    );
+    encode_operand_a(&mut inst.0, source_register);
+    encode_register0(&mut inst.0, destionation_register);
+
+    inst.set_destination_predicate_register(destination_predicate_register);
+    inst.set_o_flag(o_flag);
+    inst.set_mode(mode);
+    inst.set_value(value);
 
     inst.0
 }

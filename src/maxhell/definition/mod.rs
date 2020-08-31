@@ -24,32 +24,32 @@ bitfield! {
 bitfield! {
     pub struct Register0Data(u64);
     impl Debug;
-    pub u8, register, set_register: 7, 0;
+    pub u8, operand, set_operand: 7, 0;
 }
 
 bitfield! {
     pub struct OperandAData(u64);
     impl Debug;
-    pub u8, register, set_register: 15, 8;
+    pub u8, operand, set_operand: 15, 8;
 }
 
 bitfield! {
     pub struct OperandBData(u64);
     impl Debug;
-    pub u8, register, set_register: 27, 20;
+    pub u8, operand, set_operand: 27, 20;
 }
 
 bitfield! {
     pub struct OperandCData(u64);
     impl Debug;
-    pub u8, register, set_register: 46, 39;
+    pub u8, operand, set_operand: 46, 39;
 }
 
 bitfield! {
-    pub struct PredicateData(u64);
+    pub struct SourcePredicateData(u64);
     impl Debug;
-    pub u8, predicate_register, set_predicate_register: 18, 16;
-    pub invert_predicate, set_invert_predicate: 19;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
 }
 
 bitfield! {
@@ -58,8 +58,8 @@ bitfield! {
 
     pub u8, from into ControlCode, cc_flags, set_cc_flags: 12, 8;
     pub trigger, set_trigger: 13;
-    pub u8, predicate_register, set_predicate_register: 18, 16;
-    pub invert_predicate, set_invert_predicate: 19;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
     pub u16, imm16, set_imm16: 36, 20;
 }
 
@@ -78,8 +78,8 @@ bitfield! {
     impl Debug;
 
     pub u8, from into ControlCode, cc_flags, set_cc_flags: 4, 0;
-    pub u8, predicate_register, set_predicate_register: 18, 16;
-    pub invert_predicate, set_invert_predicate: 19;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
 }
 
 bitfield! {
@@ -88,8 +88,8 @@ bitfield! {
 
     pub u8, from into ControlCode, cc_flags, set_cc_flags: 4, 0;
     pub u8, keep_refcount, set_keep_refcount: 5;
-    pub u8, predicate_register, set_predicate_register: 18, 16;
-    pub invert_predicate, set_invert_predicate: 19;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
 }
 
 bitfield! {
@@ -118,9 +118,26 @@ bitfield! {
     pub struct KilInstruction(u64);
     impl Debug;
 
-    pub u8, predicate_register, set_predicate_register: 18, 16;
-    pub invert_predicate, set_invert_predicate: 19;
-    pub u8, cc_flags, set_cc_flags: 4, 0;
+    pub u8, from into ControlCode, cc_flags, set_cc_flags: 4, 0;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
+}
+
+bitfield! {
+    // TODO: this seems to hide way more flags here (bit 31? bits 33 to 43?)
+    pub struct Al2pInstruction(u64);
+    impl Debug;
+
+    pub u8, destination_register, set_destination_register: 7, 0;
+    pub u8, source_register, set_source_register: 15, 8;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
+    pub i16, value, set_value: 30, 20;
+
+    pub o_flag, set_o_flag: 32;
+
+    pub u8, destination_predicate_register, set_destination_predicate_register: 46, 44;
+    pub u8, from into Al2pMode, mode, set_mode: 48, 47;
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -134,6 +151,7 @@ pub enum Opcode {
     SETLMEMBASE,
     IDE,
     KIL,
+    AL2P,
 }
 
 impl From<u32> for Opcode {
@@ -148,6 +166,7 @@ impl From<u32> for Opcode {
             0xe2f00000 => Opcode::SETLMEMBASE,
             0xe3900000 => Opcode::IDE,
             0xe3300000 => Opcode::KIL,
+            0xefa00000 => Opcode::AL2P,
             _ => panic!("Invalid Opcode value"),
         }
     }
@@ -165,6 +184,7 @@ impl From<Opcode> for u32 {
             Opcode::SETLMEMBASE => 0xe2f00000,
             Opcode::IDE => 0xe3900000,
             Opcode::KIL => 0xe3300000,
+            Opcode::AL2P => 0xefa00000,
         }
     }
 }
@@ -217,21 +237,12 @@ enum_with_val! {
     }
 }
 
-impl ControlCode {
-    pub fn is_valid(value: u8) -> bool {
-        value >= ControlCode::MIN.0 && value <= ControlCode::MAX.0
-    }
-}
-
-impl From<ControlCode> for u8 {
-    fn from(control: ControlCode) -> u8 {
-        control.0
-    }
-}
-
-impl From<u8> for ControlCode {
-    fn from(value: u8) -> ControlCode {
-        debug_assert!(ControlCode::is_valid(value));
-        ControlCode(value)
+enum_with_val! {
+    #[derive(PartialEq, Eq)]
+    pub struct Al2pMode(u8) {
+        M32 = 0, // Guesss TODO: check this
+        M64 = 1,
+        M96 = 2,
+        M128 = 3
     }
 }

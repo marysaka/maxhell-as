@@ -25,5 +25,17 @@ macro_rules! enum_with_val {
                 }
             }
         }
+
+        impl From<$ty> for $ident {
+            fn from(data: $ty) -> $ident {
+                $ident(data)
+            }
+        }
+
+        impl From<$ident> for $ty {
+            fn from(data: $ident) -> $ty {
+                data.0
+            }
+        }
     }
 }

@@ -57,7 +57,17 @@ fn main() -> std::io::Result<()> {
     instructions.push(encoder::encode_get_lmembase(42));
     instructions.push(encoder::encode_set_lmembase(42));
     instructions.push(encoder::encode_ide(42, false));
-    instructions.push(encoder::encode_kil(7, false, 0xF));
+    instructions.push(encoder::encode_kil(7, false, ControlCode::TRUE));
+    instructions.push(encoder::encode_al2p(
+        7,
+        false,
+        7,
+        1,
+        42,
+        false,
+        Al2pMode::M128,
+        0x0,
+    ));
 
     println!("Instruction: 0x{:x}", instructions.last().unwrap());
 
