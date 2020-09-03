@@ -293,7 +293,7 @@ pub fn encode_atoms(
     source_register_a: u8,
     source_register_b: u8,
     register_a_offset: i32,
-    type_size: AtomicPrimitiveType,
+    type_size: AtomsPrimitiveType,
     operation: AtomsOperation,
 ) -> u64 {
     let mut inst = AtomsIntruction(0);
@@ -342,6 +342,39 @@ pub fn encode_atoms_cas(
     encode_operand0(&mut inst.0, destination_register);
     encode_operand1(&mut inst.0, source_register_a);
     encode_operand2(&mut inst.0, source_register_b - 1);
+
+    inst.set_type_size(type_size);
+
+    // NOTE: if the value is negative, this part will end up positive.
+    // TODO: check on hw that this part will be negative or positive.
+    inst.set_register_a_offset1((((register_a_offset) % 0x10) / 4) as u8);
+    inst.set_register_a_offset2(register_a_offset / 0x10);
+    inst.set_operation(operation);
+
+    inst.0
+}
+
+pub fn encode_atom(
+    source_predicate_register: u8,
+    invert_source_predicate: bool,
+    destination_register: u8,
+    source_register_a: u8,
+    source_register_b: u8,
+    register_a_offset: i32,
+    type_size: AtomPrimitiveType,
+    operation: AtomOperation,
+) -> u64 {
+    let mut inst = AtomInstruction(0);
+
+    encode_opcode(&mut inst.0, Opcode::ATOM);
+    encode_source_predicate(
+        &mut inst.0,
+        source_predicate_register,
+        invert_source_predicate,
+    );
+    encode_operand0(&mut inst.0, destination_register);
+    encode_operand1(&mut inst.0, source_register_a);
+    encode_operand2(&mut inst.0, source_register_b);
 
     inst.set_type_size(type_size);
 

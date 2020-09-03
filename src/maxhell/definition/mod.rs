@@ -178,7 +178,7 @@ bitfield! {
     pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
     pub invert_source_predicate, set_invert_source_predicate: 19;
     pub u8, source_register_b, set_source_register_b: 27, 20;
-    pub u8, from into AtomicPrimitiveType, type_size, set_type_size: 30, 28;
+    pub u8, from into AtomsPrimitiveType, type_size, set_type_size: 30, 28;
 
     // (offset % 0x10) / 4
     // NOTE: unsigned (I think NVIDIA did a oopsie here...? or maybe nvidisasm is totally broken)
@@ -215,6 +215,29 @@ bitfield! {
 
     pub u8, from into AtomicCasPrimitiveType, type_size, set_type_size: 52, 52;
     pub u8, from into AtomsCasOperation, operation, set_operation: 54, 53;
+}
+
+bitfield! {
+    pub struct AtomInstruction(u64);
+    impl Debug;
+
+    pub u8, destniation_register, set_destination_register: 7, 0;
+    pub u8, source_register_a, set_source_register_a: 15, 8;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
+    pub u8, source_register_b, set_source_register_b: 27, 20;
+
+    // (offset % 0x10) / 4
+    // NOTE: unsigned (I think NVIDIA did a oopsie here...? or maybe nvidisasm is totally broken)
+    // TODO: better name
+    pub u8, register_a_offset1, set_register_a_offset1: 32, 30;
+
+    // offset / 0x10
+    // NOTE: signed if source_register_a != 0xFF, otherwise unsigned.
+    // TODO: better name
+    pub i32, register_a_offset2, set_register_a_offset2: 47, 32;
+    pub u8, from into AtomPrimitiveType, type_size, set_type_size: 51, 49;
+    pub u8, from into AtomOperation, operation, set_operation: 55, 52;
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -345,11 +368,21 @@ enum_with_val! {
 
 enum_with_val! {
     #[derive(PartialEq, Eq)]
-    pub struct AtomicPrimitiveType(u8) {
+    pub struct AtomsPrimitiveType(u8) {
         U32 = 0,
         S32 = 1,
         U64 = 2,
         S64 = 3,
+    }
+}
+
+enum_with_val! {
+    #[derive(PartialEq, Eq)]
+    pub struct AtomPrimitiveType(u8) {
+        U32 = 0,
+        S32 = 1,
+        U64 = 2,
+        F32 = 3,
     }
 }
 
@@ -365,6 +398,24 @@ enum_with_val! {
         OR = 6,
         XOR = 7,
         EXCH = 8,
+    }
+}
+
+enum_with_val! {
+    #[derive(PartialEq, Eq)]
+    pub struct AtomOperation(u8) {
+        ADD = 0,
+        MIN = 1,
+        MAX = 2,
+        INC = 3,
+        DEC = 4,
+        AND = 5,
+        OR = 6,
+        XOR = 7,
+        EXCH = 8,
+
+        // Only for Opcode::ATOM.
+        SAFE_ADD = 10
     }
 }
 
