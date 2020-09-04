@@ -179,17 +179,7 @@ bitfield! {
     pub invert_source_predicate, set_invert_source_predicate: 19;
     pub u8, source_register_b, set_source_register_b: 27, 20;
     pub u8, from into AtomsPrimitiveType, type_size, set_type_size: 30, 28;
-
-    // (offset % 0x10) / 4
-    // NOTE: unsigned (I think NVIDIA did a oopsie here...? or maybe nvidisasm is totally broken)
-    // TODO: better name
-    pub u8, register_a_offset1, set_register_a_offset1: 32, 30;
-
-    // offset / 0x10
-    // NOTE: signed if source_register_a != 0xFF, otherwise unsigned.
-    // TODO: better name
-    pub i32, register_a_offset2, set_register_a_offset2: 51, 32;
-
+    pub i32, register_a_offset_shr_2, set_register_a_offset_shr_2: 51, 30;
     pub u8, from into AtomsOperation, operation, set_operation: 55, 52;
 }
 
@@ -202,17 +192,7 @@ bitfield! {
     pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
     pub invert_source_predicate, set_invert_source_predicate: 19;
     pub u8, source_register_b, set_source_register_b: 27, 20;
-
-    // (offset % 0x10) / 4
-    // NOTE: unsigned (I think NVIDIA did a oopsie here...? or maybe nvidisasm is totally broken)
-    // TODO: better name
-    pub u8, register_a_offset1, set_register_a_offset1: 32, 30;
-
-    // offset / 0x10
-    // NOTE: signed if source_register_a != 0xFF, otherwise unsigned.
-    // TODO: better name
-    pub i32, register_a_offset2, set_register_a_offset2: 51, 32;
-
+    pub i32, register_a_offset_shr_2, set_register_a_offset_shr_2: 51, 30;
     pub u8, from into AtomicCasPrimitiveType, type_size, set_type_size: 52, 52;
     pub u8, from into AtomsCasOperation, operation, set_operation: 54, 53;
 }
@@ -226,18 +206,24 @@ bitfield! {
     pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
     pub invert_source_predicate, set_invert_source_predicate: 19;
     pub u8, source_register_b, set_source_register_b: 27, 20;
-
-    // (offset % 0x10) / 4
-    // NOTE: unsigned (I think NVIDIA did a oopsie here...? or maybe nvidisasm is totally broken)
-    // TODO: better name
-    pub u8, register_a_offset1, set_register_a_offset1: 32, 30;
-
-    // offset / 0x10
-    // NOTE: signed if source_register_a != 0xFF, otherwise unsigned.
-    // TODO: better name
-    pub i32, register_a_offset2, set_register_a_offset2: 47, 32;
+    pub i32, register_a_offset, set_register_a_offset: 47, 28;
     pub u8, from into AtomPrimitiveType, type_size, set_type_size: 51, 49;
     pub u8, from into AtomOperation, operation, set_operation: 55, 52;
+    pub e_flag, set_e_flag: 48;
+}
+
+bitfield! {
+    pub struct AtomCasInstruction(u64);
+    impl Debug;
+
+    pub u8, destniation_register, set_destination_register: 7, 0;
+    pub u8, source_register_a, set_source_register_a: 15, 8;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
+    pub u8, source_register_b, set_source_register_b: 27, 20;
+    pub i32, register_a_offset, set_register_a_offset: 47, 28;
+    pub e_flag, set_e_flag: 48;
+    pub u8, from into AtomicCasPrimitiveType, type_size, set_type_size: 49, 49;
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

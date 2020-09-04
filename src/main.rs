@@ -95,7 +95,7 @@ fn main() -> std::io::Result<()> {
         4,
         1,
         2,
-        0x10,
+        0x14,
         AtomsPrimitiveType::S32,
         AtomsOperation::EXCH,
     ));
@@ -106,8 +106,8 @@ fn main() -> std::io::Result<()> {
         1,
         2,
         0x14,
-        AtomicCasPrimitiveType::U64,
-        AtomsCasOperation::CAST_SPIN,
+        AtomicCasPrimitiveType::U32,
+        AtomsCasOperation::CAS,
     ));
     instructions.push(encoder::encode_atom(
         7,
@@ -118,6 +118,17 @@ fn main() -> std::io::Result<()> {
         0x14,
         AtomPrimitiveType::U64,
         AtomOperation::SAFE_ADD,
+        false,
+    ));
+    instructions.push(encoder::encode_atom_cas(
+        7,
+        false,
+        4,
+        1,
+        2,
+        0x14,
+        AtomicCasPrimitiveType::U64,
+        false,
     ));
 
     println!("Instruction: 0x{:x}", instructions.last().unwrap());
