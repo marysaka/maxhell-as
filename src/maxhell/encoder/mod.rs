@@ -10,6 +10,14 @@ fn encode_opcode(out: &mut u64, opcode: Opcode) {
     *out = inst.0;
 }
 
+fn encode_imm8(out: &mut u64, value: u8) {
+    let mut inst = Imm8Data(*out);
+
+    inst.set_imm8(value);
+
+    *out = inst.0;
+}
+
 fn encode_imm16(out: &mut u64, value: u16) {
     let mut inst = Imm16Data(*out);
 
@@ -26,34 +34,34 @@ fn encode_imm32(out: &mut u64, value: u32) {
     *out = inst.0;
 }
 
-fn encode_operand0(out: &mut u64, register: u8) {
+fn encode_operand0(out: &mut u64, operand: u8) {
     let mut inst = Operand0Data(*out);
 
-    inst.set_operand(register);
+    inst.set_operand(operand);
 
     *out = inst.0;
 }
 
-fn encode_operand1(out: &mut u64, register: u8) {
+fn encode_operand1(out: &mut u64, operand: u8) {
     let mut inst = Operand1Data(*out);
 
-    inst.set_operand(register);
+    inst.set_operand(operand);
 
     *out = inst.0;
 }
 
-fn encode_operand2(out: &mut u64, register: u8) {
+fn encode_operand2(out: &mut u64, operand: u8) {
     let mut inst = Operand2Data(*out);
 
-    inst.set_operand(register);
+    inst.set_operand(operand);
 
     *out = inst.0;
 }
 
-fn encode_operand3(out: &mut u64, register: u8) {
+fn encode_operand3(out: &mut u64, operand: u8) {
     let mut inst = Operand3Data(*out);
 
-    inst.set_operand(register);
+    inst.set_operand(operand);
 
     *out = inst.0;
 }
@@ -65,6 +73,14 @@ fn encode_source_predicate(out: &mut u64, predicate_register: u8, invert_predica
 
     inst.set_source_predicate_register(predicate_register);
     inst.set_invert_source_predicate(invert_predicate);
+
+    *out = inst.0;
+}
+
+fn encode_destination_predicate(out: &mut u64, predicate_register: u8) {
+    let mut inst = DestinationPredicateData(*out);
+
+    inst.set_destination_predicate_register(predicate_register);
 
     *out = inst.0;
 }
@@ -217,8 +233,8 @@ pub fn encode_al2p(
 
     encode_operand0(&mut inst.0, destionation_register);
     encode_operand1(&mut inst.0, source_register);
+    encode_destination_predicate(&mut inst.0, destination_predicate_register);
 
-    inst.set_destination_predicate_register(destination_predicate_register);
     inst.set_o_flag(o_flag);
     inst.set_mode(mode);
     inst.set_load_offset(load_offset);
@@ -409,5 +425,29 @@ pub fn encode_atom_cas(
     inst.set_register_a_offset(register_a_offset);
     inst.set_e_flag(e_flag);
 
+    inst.0
+}
+
+pub fn encode_b2r(
+    source_predicate_register: u8,
+    invert_source_predicate: bool,
+    destination_register: u8,
+    destination_predicate_register: u8,
+    operation: B2ROperation,
+    value: u8,
+) -> u64 {
+    let mut inst = B2RInstruction(0);
+
+    encode_opcode(&mut inst.0, Opcode::B2R);
+    encode_source_predicate(
+        &mut inst.0,
+        source_predicate_register,
+        invert_source_predicate,
+    );
+    encode_operand0(&mut inst.0, destination_register);
+    encode_imm8(&mut inst.0, value);
+    encode_destination_predicate(&mut inst.0, destination_predicate_register);
+
+    inst.set_operation(operation);
     inst.0
 }

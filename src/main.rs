@@ -130,6 +130,8 @@ fn main() -> std::io::Result<()> {
         AtomicCasPrimitiveType::U64,
         false,
     ));
+    // NOTE: do not change operation as nvdisasm seems to not support it correctly at all.
+    instructions.push(encoder::encode_b2r(7, false, 0, 7, B2ROperation::BAR, 0));
 
     println!("Instruction: 0x{:x}", instructions.last().unwrap());
 

@@ -16,6 +16,12 @@ bitfield! {
 }
 
 bitfield! {
+    pub struct Imm8Data(u64);
+    impl Debug;
+    pub u8, imm8, set_imm8: 15, 8;
+}
+
+bitfield! {
     pub struct Imm32Data(u64);
     impl Debug;
     pub u32, imm32, set_imm32: 51, 20;
@@ -50,6 +56,13 @@ bitfield! {
     impl Debug;
     pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
     pub invert_source_predicate, set_invert_source_predicate: 19;
+}
+
+bitfield! {
+    pub struct DestinationPredicateData(u64);
+    impl Debug;
+
+    pub u8, destination_predicate_register, set_destination_predicate_register: 46, 44;
 }
 
 bitfield! {
@@ -226,6 +239,18 @@ bitfield! {
     pub u8, from into AtomicCasPrimitiveType, type_size, set_type_size: 49, 49;
 }
 
+bitfield! {
+    pub struct B2RInstruction(u64);
+    impl Debug;
+
+    pub u8, destination_register, set_destination_register: 7, 0;
+    pub u8, imm8, set_imm8: 15, 8;
+    pub u8, source_predicate_register, set_source_predicate_register: 18, 16;
+    pub invert_source_predicate, set_invert_source_predicate: 19;
+    pub u8, from into B2ROperation, operation, set_operation: 33, 32;
+    pub u8, destination_predicate_register, set_destination_predicate_register: 46, 44;
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[allow(non_camel_case_types)]
 pub enum Opcode {
@@ -236,6 +261,7 @@ pub enum Opcode {
     ATOM_CAS,
     ATOMS,
     ATOMS_CAS,
+    B2R,
     EXIT,
     GETLMEMBASE,
     IDE,
@@ -257,6 +283,7 @@ impl From<u32> for Opcode {
             0xed000000 => Opcode::ATOM,
             0xee400000 => Opcode::ATOMS_CAS,
             0xeef00000 => Opcode::ATOM_CAS,
+            0xf0b80000 => Opcode::B2R,
             0xe3000000 => Opcode::EXIT,
             0xe2d00000 => Opcode::GETLMEMBASE,
             0xe3900000 => Opcode::IDE,
@@ -281,6 +308,7 @@ impl From<Opcode> for u32 {
             Opcode::ATOM => 0xed000000,
             Opcode::ATOMS_CAS => 0xee400000,
             Opcode::ATOM_CAS => 0xeef00000,
+            Opcode::B2R => 0xf0b80000,
             Opcode::EXIT => 0xe3000000,
             Opcode::GETLMEMBASE => 0xe2d00000,
             Opcode::IDE => 0xe3900000,
@@ -324,7 +352,7 @@ enum_with_val! {
         HS = 22,
         OFT = 23,
 
-        // NOTE: All the instructions around here are related to the CSM patent (urgh)
+        // NOTE: All the options around here are related to the CSM patent (urgh)
         // NOTE: FCSM_* variants seems to be the opposite of the CSM one.
         // TODO: figure out anyway, with hardware testing.
         CSM_TA = 24,
@@ -419,5 +447,15 @@ enum_with_val! {
         CAST = 0,
         CAST_SPIN = 1,
         CAS = 2
+    }
+}
+
+enum_with_val! {
+    #[derive(PartialEq, Eq)]
+    pub struct B2ROperation(u8) {
+        BAR = 0,
+        WRAP = 1,
+        RESULT = 2,
+        SYNC = 3 // TODO: seems not valid?
     }
 }
