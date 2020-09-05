@@ -229,15 +229,6 @@ bitfield! {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[allow(non_camel_case_types)]
 pub enum Opcode {
-    NOP,
-    SAM,
-    RAM,
-    RET,
-    EXIT,
-    GETLMEMBASE,
-    SETLMEMBASE,
-    IDE,
-    KIL,
     AL2P,
     ALD,
     AST,
@@ -245,20 +236,20 @@ pub enum Opcode {
     ATOM_CAS,
     ATOMS,
     ATOMS_CAS,
+    EXIT,
+    GETLMEMBASE,
+    IDE,
+    KIL,
+    NOP,
+    RAM,
+    RET,
+    SAM,
+    SETLMEMBASE,
 }
 
 impl From<u32> for Opcode {
     fn from(value: u32) -> Self {
         match value {
-            0x50b00000 => Opcode::NOP,
-            0xe3700000 => Opcode::SAM,
-            0xe3800000 => Opcode::RAM,
-            0xe3200000 => Opcode::RET,
-            0xe3000000 => Opcode::EXIT,
-            0xe2d00000 => Opcode::GETLMEMBASE,
-            0xe2f00000 => Opcode::SETLMEMBASE,
-            0xe3900000 => Opcode::IDE,
-            0xe3300000 => Opcode::KIL,
             0xefa00000 => Opcode::AL2P,
             0xefd80000 => Opcode::ALD,
             0xeff00000 => Opcode::AST,
@@ -266,6 +257,15 @@ impl From<u32> for Opcode {
             0xed000000 => Opcode::ATOM,
             0xee400000 => Opcode::ATOMS_CAS,
             0xeef00000 => Opcode::ATOM_CAS,
+            0xe3000000 => Opcode::EXIT,
+            0xe2d00000 => Opcode::GETLMEMBASE,
+            0xe3900000 => Opcode::IDE,
+            0xe3300000 => Opcode::KIL,
+            0x50b00000 => Opcode::NOP,
+            0xe3800000 => Opcode::RAM,
+            0xe3200000 => Opcode::RET,
+            0xe3700000 => Opcode::SAM,
+            0xe2f00000 => Opcode::SETLMEMBASE,
             _ => panic!("Invalid Opcode value"),
         }
     }
@@ -274,15 +274,6 @@ impl From<u32> for Opcode {
 impl From<Opcode> for u32 {
     fn from(opcode: Opcode) -> u32 {
         match opcode {
-            Opcode::NOP => 0x50b00000,
-            Opcode::SAM => 0xe3700000,
-            Opcode::RAM => 0xe3800000,
-            Opcode::RET => 0xe3200000,
-            Opcode::EXIT => 0xe3000000,
-            Opcode::GETLMEMBASE => 0xe2d00000,
-            Opcode::SETLMEMBASE => 0xe2f00000,
-            Opcode::IDE => 0xe3900000,
-            Opcode::KIL => 0xe3300000,
             Opcode::AL2P => 0xefa00000,
             Opcode::ALD => 0xefd80000,
             Opcode::AST => 0xeff00000,
@@ -290,6 +281,15 @@ impl From<Opcode> for u32 {
             Opcode::ATOM => 0xed000000,
             Opcode::ATOMS_CAS => 0xee400000,
             Opcode::ATOM_CAS => 0xeef00000,
+            Opcode::EXIT => 0xe3000000,
+            Opcode::GETLMEMBASE => 0xe2d00000,
+            Opcode::IDE => 0xe3900000,
+            Opcode::KIL => 0xe3300000,
+            Opcode::NOP => 0x50b00000,
+            Opcode::SAM => 0xe3700000,
+            Opcode::RAM => 0xe3800000,
+            Opcode::RET => 0xe3200000,
+            Opcode::SETLMEMBASE => 0xe2f00000,
         }
     }
 }
